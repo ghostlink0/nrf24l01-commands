@@ -6,10 +6,11 @@
 macro_rules! impl_bitfield_enum {
     ($type:ty, $bitmask:literal) => {
         impl $type {
-            pub const fn into_bits(self) -> u8 {
+            #[allow(unused)]
+            pub(crate) const fn into_bits(self) -> u8 {
                 self as _
             }
-            pub const fn from_bits(bits: u8) -> Self {
+            pub(crate) const fn from_bits(bits: u8) -> Self {
                 #[allow(clippy::macro_metavars_in_unsafe)]
                 unsafe {
                     core::mem::transmute(bits & $bitmask)
