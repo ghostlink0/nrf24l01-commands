@@ -1,12 +1,22 @@
 //! Enums for certain nRF24L01+ register fields.
 
-/// A trait for certain multi-bit register fields that are represented as enums.
-#[const_trait]
-pub trait EnumField {
-    /// Convert the field to its bits representation.
-    fn into_bits(self) -> u8;
-    /// Convert bits to the field.
-    fn from_bits(bits: u8) -> Self;
+/// Implement `into_bits()` and `from_bits()` for enums - this is required to work with `bitfield-struct`.
+/// `$bitmask` is the maximum value the enum could be, the enum must be defined for every value up to this value.
+/// This ensures `from_bits()` can be safely passed any `u8` value.
+macro_rules! impl_bitfield_enum {
+    ($type:ty, $bitmask:literal) => {
+        impl $type {
+            pub const fn into_bits(self) -> u8 {
+                self as _
+            }
+            pub const fn from_bits(bits: u8) -> Self {
+                #[allow(clippy::macro_metavars_in_unsafe)]
+                unsafe {
+                    core::mem::transmute(bits & $bitmask)
+                }
+            }
+        }
+    };
 }
 
 /// CRC encoding scheme.
@@ -18,15 +28,7 @@ pub enum Crco {
     /// 2 byte CRC
     TwoByte = 1,
 }
-impl const EnumField for Crco {
-    fn into_bits(self) -> u8 {
-        self as _
-    }
-    fn from_bits(bits: u8) -> Self {
-        // SAFETY: The result is guaranteed to be in the range of 0-1
-        unsafe { core::mem::transmute(bits & 1) }
-    }
-}
+impl_bitfield_enum!(Crco, 1);
 
 /// RX/TX address field width in bytes.
 /// LSByte is used if address width is below 5 bytes.
@@ -38,15 +40,7 @@ pub enum AddressWidth {
     FourByte = 0b10,
     FiveByte = 0b11,
 }
-impl const EnumField for AddressWidth {
-    fn into_bits(self) -> u8 {
-        self as _
-    }
-    fn from_bits(bits: u8) -> Self {
-        // SAFETY: The result is guaranteed to be in the range of 0-3
-        unsafe { core::mem::transmute(bits & 0b11) }
-    }
-}
+impl_bitfield_enum!(AddressWidth, 0b11);
 
 /// Auto retransmit delay.
 ///
@@ -79,15 +73,7 @@ pub enum AutoRetransmitDelay {
     US3750 = 0b1110,
     US4000 = 0b1111,
 }
-impl const EnumField for AutoRetransmitDelay {
-    fn into_bits(self) -> u8 {
-        self as _
-    }
-    fn from_bits(bits: u8) -> Self {
-        // SAFETY: The result is guaranteed to be in the range of 0-15
-        unsafe { core::mem::transmute(bits & 0b1111) }
-    }
-}
+impl_bitfield_enum!(AutoRetransmitDelay, 0b1111);
 
 /// High speed data rate.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -96,15 +82,7 @@ pub enum RfDrHigh {
     Mbps1 = 0,
     Mbps2 = 1,
 }
-impl const EnumField for RfDrHigh {
-    fn into_bits(self) -> u8 {
-        self as _
-    }
-    fn from_bits(bits: u8) -> Self {
-        // SAFETY: The result is guaranteed to be in the range of 0-1
-        unsafe { core::mem::transmute(bits & 1) }
-    }
-}
+impl_bitfield_enum!(RfDrHigh, 1);
 
 /// Set RF output power in TX mode.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -119,15 +97,7 @@ pub enum RfPower {
     /// 0 dBm
     Dbm0 = 0b11,
 }
-impl const EnumField for RfPower {
-    fn into_bits(self) -> u8 {
-        self as _
-    }
-    fn from_bits(bits: u8) -> Self {
-        // SAFETY: The result is guaranteed to be in the range of 0-3
-        unsafe { core::mem::transmute(bits & 0b11) }
-    }
-}
+impl_bitfield_enum!(RfPower, 0b11);
 
 /// Data pipe number for the payload available from reading RX FIFO.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -142,12 +112,4 @@ pub enum RxPipeNo {
     NotUsed = 0b110,
     RxFifoEmpty = 0b111,
 }
-impl const EnumField for RxPipeNo {
-    fn into_bits(self) -> u8 {
-        self as _
-    }
-    fn from_bits(bits: u8) -> Self {
-        // SAFETY: The result is guaranteed to be in the range of 0-7
-        unsafe { core::mem::transmute(bits & 0b111) }
-    }
-}
+impl_bitfield_enum!(RxPipeNo, 0b111);

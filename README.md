@@ -14,9 +14,9 @@ This crate is based on the [nRF24L01+ specification](https://docs.nordicsemi.com
 
 ## Examples
 
-### Command to write CONFIG register
+### Generate Bytes to Write CONFIG register
 ```rust
-use nrf24l01_commands::{commands, fields, registers};
+use nrf24l01_commands::{fields, registers};
 
 const CONFIG: registers::Config = registers::Config::new()
     .with_mask_rx_dr(true)
@@ -26,28 +26,43 @@ const CONFIG: registers::Config = registers::Config::new()
     .with_crco(fields::Crco::TwoByte)
     .with_pwr_up(true)
     .with_prim_rx(false);
-const WRITE_COMMAND: commands::WRegister<registers::Config> = commands::WRegister(CONFIG);
 
 // Generate SPI byte sequence
-const SPI_BYTES: [u8; 2] = WRITE_COMMAND.bytes();
+const SPI_BYTES: [u8; 2] = CONFIG.as_write_bytes();
 assert_eq!(SPI_BYTES, [0b0010_0000, 0b0100_0110]);
 ```
-### Command to read FIFO_STATUS register
+### Generate Bytes to Read FIFO_STATUS register
 ```rust
-use nrf24l01_commands::{registers, commands};
+use nrf24l01_commands::registers;
 
 // Generate SPI byte sequence
-const SPI_BYTES: [u8; 2] = commands::RRegister::<registers::FifoStatus>::bytes();
-assert_eq!(SPI_BYTES, [0 | 0x17, 0]);
+const SPI_BYTES: [u8; 2] = registers::FifoStatus::as_read_bytes();
+assert_eq!(SPI_BYTES, [0x17, 0]);
 ```
-### Command to write TX payload
+### Write TX payload
 ```rust
-use nrf24l01_commands::commands;
+use nrf24l01_commands::*;
 
 const PAYLOAD: [u8; 9] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-// Generate SPI byte sequence
-const SPI_BYTES: [u8; 10] = commands::WTxPayload(PAYLOAD).bytes();
+// Construct SPI byte sequence
+const SPI_BYTES: [u8; 10] = [W_TX_PAYLOAD, PAYLOAD[0], PAYLOAD[1], PAYLOAD[2], PAYLOAD[3], PAYLOAD[4], PAYLOAD[5], PAYLOAD[6], PAYLOAD[7], PAYLOAD[8]];
 assert_eq!(SPI_BYTES, [0b1010_0000, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+```
+
+### Read RX-payload
+```rust
+use nrf24l01_commands::*;
+
+assert_eq!(RRxPayload::command_bytes::<6>(), [0b0110_0001, 0, 0, 0, 0, 0]);
+```
+
+### Write address register
+```rust
+use nrf24l01_commands::registers::*;
+
+const TX_ADDR_WIDTH5: TxAddr<4> = TxAddr::from_bits(0x170F431EDC);
+const WRITE_REG_BYTES: [u8; 5] = TX_ADDR_WIDTH5.as_write_bytes();
+assert_eq!(WRITE_REG_BYTES, [0b0010_0000 | 0x10, 0xDC, 0x1E, 0x43, 0x0F]);
 ```
 
 ### Inspect register fields
