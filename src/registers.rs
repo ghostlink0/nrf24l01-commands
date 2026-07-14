@@ -69,7 +69,7 @@ macro_rules! impl_register {
 
 /// Implement methods for an address register (contains 3-5 data bytes)
 macro_rules! impl_address_register {
-    ($type:ident, $inner:ident, $addr:literal, $getter:ident, $setter:ident, $doc:literal) => {
+    ($type:ident, $inner:ident, $addr:literal, $getter:ident, $setter:ident, $doc:literal, [$($n:literal),+]) => {
         impl<const N: usize> $type<N> {
             pub const ADDRESS: u8 = $addr;
 
@@ -102,12 +102,8 @@ macro_rules! impl_address_register {
                 Self::new()
             }
         }
-    };
-}
 
-/// Implement `as_write_bytes` and `as_read_bytes` for each address width.
-macro_rules! impl_address_register_width {
-    ($type:ident, $($n:literal),*) => {
+        /// Implement `as_write_bytes` and `as_read_bytes` for each address width.
         $(
             impl $type<$n> {
                 /// Get the SPI byte sequence for a write command for this register.
@@ -804,9 +800,9 @@ impl_address_register!(
     0x0A,
     rx_addr_p0,
     with_rx_addr_p0,
-    "RX address data pipe 0. Default value: `0xE7E7E7E7E7`."
+    "RX address data pipe 0. Default value: `0xE7E7E7E7E7`.",
+    [3, 4, 5]
 );
-impl_address_register_width!(RxAddrP0, 3, 4, 5);
 
 /// # RX_ADDR_P1 register
 /// RX address data pipe 1.
@@ -860,9 +856,9 @@ impl_address_register!(
     0x0B,
     rx_addr_p1,
     with_rx_addr_p1,
-    "RX address data pipe 1. Default value: `0xC2C2C2C2C2`."
+    "RX address data pipe 1. Default value: `0xC2C2C2C2C2`.",
+    [3, 4, 5]
 );
-impl_address_register_width!(RxAddrP1, 3, 4, 5);
 
 /// # RX_ADDR_P2 register
 /// RX address data pipe 2. Only LSByte is stored.
@@ -1036,9 +1032,9 @@ impl_address_register!(
     0x10,
     tx_addr,
     with_tx_addr,
-    "TX address. Default value: `0xE7E7E7E7E7`."
+    "TX address. Default value: `0xE7E7E7E7E7`.",
+    [3, 4, 5]
 );
-impl_address_register_width!(TxAddr, 3, 4, 5);
 
 /// # RX_PW_P0 register
 /// RX payload width for data pipe 0.
