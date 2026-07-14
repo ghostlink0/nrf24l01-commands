@@ -56,13 +56,17 @@ use nrf24l01_commands::*;
 assert_eq!(RRxPayload::command_bytes::<6>(), [0b0110_0001, 0, 0, 0, 0, 0]);
 ```
 
-### Write address register
+### Write/read address register
 ```rust
 use nrf24l01_commands::registers::*;
 
-const TX_ADDR_WIDTH5: TxAddr<4> = TxAddr::from_bits(0x170F431EDC);
-const WRITE_REG_BYTES: [u8; 5] = TX_ADDR_WIDTH5.as_write_bytes();
+// Write address register
+const TX_ADDR_WIDTH4: TxAddr<4> = TxAddr::from_bits(0x170F431EDC);
+const WRITE_REG_BYTES: [u8; 5] = TX_ADDR_WIDTH4.as_write_bytes();
 assert_eq!(WRITE_REG_BYTES, [0b0010_0000 | 0x10, 0xDC, 0x1E, 0x43, 0x0F]);
+
+// Read address register
+assert_eq!(TxAddr::<3>::as_read_bytes(), [0x10, 0, 0, 0]);
 ```
 
 ### Inspect register fields
