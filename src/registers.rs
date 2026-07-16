@@ -57,7 +57,7 @@ macro_rules! impl_register {
             }
             /// Get the SPI byte sequence for a write command for this register.
             pub const fn as_write_bytes(&self) -> [u8; 2] {
-                [$crate::W_REGISTER | Self::ADDRESS, self.into_bits()]
+                [$crate::WRegister::WORD | Self::ADDRESS, self.into_bits()]
             }
             /// Get the SPI byte sequence for a read command for this register.
             pub const fn as_read_bytes() -> [u8; 2] {
@@ -110,7 +110,7 @@ macro_rules! impl_address_register {
                 pub const fn as_write_bytes(&self) -> [u8; $n + 1] {
                     let addr = self.into_bytes();
                     let mut bytes = [0u8; $n + 1];
-                    bytes[0] = $crate::W_REGISTER | Self::ADDRESS;
+                    bytes[0] = $crate::WRegister::WORD | Self::ADDRESS;
                     let mut i = 0;
                     while i < $n {
                         bytes[i + 1] = addr[i];
@@ -1239,8 +1239,8 @@ impl_register!(RxPwP5, 0x16);
 /// #### `tx_reuse` | bit 6
 /// Reuse last transmitted data packet if set high.
 /// The packet is repeatedly retransmitted as long as CE is high.
-/// TX_REUSE is set by the [`REUSE_TX_PL`][crate::REUSE_TX_PL] command and reset by
-/// [`W_TX_PAYLOAD`][crate::W_TX_PAYLOAD] or [`FLUSH_TX`][crate::FLUSH_TX].
+/// TX_REUSE is set by the [`REUSE_TX_PL`][crate::ReuseTxPl] command and reset by
+/// [`W_TX_PAYLOAD`][crate::WTxPayload] or [`FLUSH_TX`][crate::FlushTx].
 ///
 /// #### `tx_full` | bit 5
 /// TX FIFO full flag.

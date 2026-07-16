@@ -45,7 +45,7 @@ use nrf24l01_commands::*;
 
 const PAYLOAD: [u8; 9] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 // Construct SPI byte sequence
-const SPI_BYTES: [u8; 10] = [W_TX_PAYLOAD, PAYLOAD[0], PAYLOAD[1], PAYLOAD[2], PAYLOAD[3], PAYLOAD[4], PAYLOAD[5], PAYLOAD[6], PAYLOAD[7], PAYLOAD[8]];
+const SPI_BYTES: [u8; 10] = [WTxPayload::WORD, PAYLOAD[0], PAYLOAD[1], PAYLOAD[2], PAYLOAD[3], PAYLOAD[4], PAYLOAD[5], PAYLOAD[6], PAYLOAD[7], PAYLOAD[8]];
 assert_eq!(SPI_BYTES, [0b1010_0000, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
 ```
 
@@ -53,7 +53,7 @@ assert_eq!(SPI_BYTES, [0b1010_0000, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
 ```rust
 use nrf24l01_commands::*;
 
-assert_eq!(RRxPayload::command_bytes::<6>(), [0b0110_0001, 0, 0, 0, 0, 0]);
+assert_eq!(RRxPayload::as_bytes::<6>(), [0b0110_0001, 0, 0, 0, 0, 0]);
 ```
 
 ### Write/read address register
